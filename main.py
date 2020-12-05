@@ -8,7 +8,7 @@ import scipy.optimize as op
 
 #Assuming the data is all integer data
 #And of a particular format, the getTrainingData needs modifications
-#In particular, the y values are in the first column
+#In particular, the target/class values are in the first column
 #Depending on number of features of data
 #We convert the data from getTrainingData from string format to
 
@@ -24,22 +24,13 @@ def getTrainingData():
             colNum = len(data[0])
 
             #trueColNum ignores the columns with non-numerical data
-            #The 3 is comes of our particular example data set
-            #of which the last 3 columns are non-numerical/not important
-
+            
             trueColNum = colNum
-
-            #debugging print statements
-            #print(colNum)
-            #print(data[0])
-
-           #This for loop changes the data entries from string to int
 
             intData = []
 
             for line in data:
                 intLine = []
-                #print(type(line[0]))
                 counter = 0
                 # while loop which converts line into a line of float instead of str values
                 # we want float not into so that when we normalise, division by
@@ -68,10 +59,10 @@ trainingData = getTrainingData()
 #the target of our MNIST training data is in the first column of the trainingData
 yTarget = trainingData[:,[0]]
 #create Theta_Zero column on int 1s
+#We multiply by (0.99/255 +0.01) to adjust the ones to the scaling done to the mnist data
 thetaZero = (0.01388235294)*numpy.ones((trainingData.shape[0],1),int)
 #Remove the y values from training data
 Xprime = numpy.delete(trainingData,0,1)
-#print(Xprime)
 #The design matrix X
 X = numpy.append(thetaZero, Xprime,1)
 
@@ -93,14 +84,6 @@ def sigmoid(z):
 def logarithm(z):
     g = numpy.log(z)
     return g
-
-#We then need to vectorise the sigmoid function in order for it to be applied to numpy arrays
-#vectSigmoid =  numpy.vectorize(sigmoid)
-#***DONT NEED TO VECTORISE USE NUMPY.EXP AND NUMPY.LOG instead
-#We will also need to vectorise the log function
-#vectLog = numpy.vectorize(math.log)
-
-
 
 def costFunction(theta,X,y,regCoeff):
     #m = number of training examples i.e length(y)
@@ -141,18 +124,8 @@ def gradient(theta,X,y,regCoeff):
 y = trainingData[:,[0]]
 theta = numpy.ones((X.shape[1],1))
 
-#We instead use a minimisation method from scipy
-
 #Set the regularisation coefficient to 0.1
 regCoeff = 0.01
-#m , n = Xprime.shape;
-#initial_theta = numpy.zeros(n);
-#Result = op.minimize(fun = costFunction,
-                                 #x0 = initial_theta,
-                                 #args = (Xprime, y, regCoeff),
-                                 #method = 'TNC',
-                                 #jac = gradient);
-#optimal_theta = Result.x;
 
 print("initiating oneVsAll...")
 print("Running oneVsAll......")
@@ -189,15 +162,13 @@ def oneVsAll(X,y,num_class):
         #print("Next Result.x")
         all_theta[i] = optimal_theta
     return all_theta
-#print(oneVsAll(X,y,10))
 
 all_theta = oneVsAll(X,y,10)
-#print(all_theta)
 print("oneVsAll complete!")
-#PREDICT Predict whether the label is 0 or 1 using learned logistic
-#regression parameters theta
-#  p = PREDICT(theta, X) computes the predictions for X using a
-#   threshold at 0.5 (i.e., if sigmoid(theta'*x) >= 0.5, predict 1)
+
+#PREDICT Predict whether the test_digits is 0,1,2,3,4,5,6,7,8,9 using learned logistic
+#design matrix X
+#regression parameters all_theta
 def prediction(X,all_thetas):
 
     m = numpy.shape(X)[0]
@@ -212,6 +183,8 @@ def prediction(X,all_thetas):
     predictor = indices
 
     return predictor
+
+#Get the testing data
 def getTestingData():
     #call input function
     filepath = input('Please enter the file path for your testing data: ')
@@ -223,15 +196,7 @@ def getTestingData():
             data = [row for row in csv_reader]
             colNum = len(data[0])
 
-            #trueColNum ignores the columns with non-numerical data
-            #The 3 is comes of our particular example data set
-            #of which the last 3 columns are non-numerical/not important
-
             trueColNum = colNum
-
-            #debugging print statements
-            #print(colNum)
-            #print(data[0])
 
            #This for loop changes the data entries from string to int
 
@@ -264,8 +229,8 @@ testingData = getTestingData()
 #This turns 2d array into a numpy 2d array i.e matrix
 #Thus can now use numpy operations on our data!
 
-#We first split the data into training variables X and output y
-#the target of our MNIST training data is in the first column of the trainingData
+#We first split the data into test variables X and output y
+#the target of our MNIST test data is in the first column of the testingData
 yTarget = testingData[:,[0]]
 #create Theta_Zero column on int 1s
 thetaZero = (0.01388235294)*numpy.ones((testingData.shape[0],1),int)
