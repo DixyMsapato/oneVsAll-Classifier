@@ -8,7 +8,7 @@ import scipy.optimize as op
 
 #Assuming the data is all integer data
 #And of a particular format, the getTrainingData needs modifications
-#In particular, the target/class values are in the first column
+#In particular, the y values are in the first column
 #Depending on number of features of data
 #We convert the data from getTrainingData from string format to
 
@@ -22,10 +22,11 @@ def getTrainingData():
             #load the data into a list of lists
             data = [row for row in csv_reader]
             colNum = len(data[0])
-
             #trueColNum ignores the columns with non-numerical data
-            
+
             trueColNum = colNum
+
+           #This for loop changes the data entries from string to int
 
             intData = []
 
@@ -50,19 +51,20 @@ def getTrainingData():
         #Call getTrainingData() again.
         getTrainingData()
 
+num_classes = int(input("Enter the number of classes you'd like to classify:"))
+while type(num_classes) != int:
+    num_classes = int(input("Enter an integer for the number of classes you'd like to classify:"))
 trainingData = getTrainingData()
 
-#This turns 2d array into a numpy 2d array i.e matrix
-#Thus can now use numpy operations on our data!
 
 #We first split the data into training variables X and output y
 #the target of our MNIST training data is in the first column of the trainingData
 yTarget = trainingData[:,[0]]
 #create Theta_Zero column on int 1s
-#We multiply by (0.99/255 +0.01) to adjust the ones to the scaling done to the mnist data
 thetaZero = (0.01388235294)*numpy.ones((trainingData.shape[0],1),int)
 #Remove the y values from training data
 Xprime = numpy.delete(trainingData,0,1)
+#print(Xprime)
 #The design matrix X
 X = numpy.append(thetaZero, Xprime,1)
 
@@ -76,6 +78,7 @@ for i in range(0,10):
     plt.show()
 plt.close()
 print("End of data check.")
+
 #first we define the sigmoid and logistic function
 def sigmoid(z):
     return 1/(1+numpy.exp(-z))
@@ -119,8 +122,6 @@ def gradient(theta,X,y,regCoeff):
     return regGrad.ravel()
 
 
-#Step 1 - shuffle the data the data, call it X
-#X = numpy.random.permutation(X)
 y = trainingData[:,[0]]
 theta = numpy.ones((X.shape[1],1))
 
@@ -163,12 +164,11 @@ def oneVsAll(X,y,num_class):
         all_theta[i] = optimal_theta
     return all_theta
 
-all_theta = oneVsAll(X,y,10)
+all_theta = oneVsAll(X,y,num_classes)
 print("oneVsAll complete!")
 
-#PREDICT Predict whether the test_digits is 0,1,2,3,4,5,6,7,8,9 using learned logistic
-#design matrix X
-#regression parameters all_theta
+
+#make predicition of what the test case is after algo has been trained
 def prediction(X,all_thetas):
 
     m = numpy.shape(X)[0]
@@ -183,8 +183,6 @@ def prediction(X,all_thetas):
     predictor = indices
 
     return predictor
-
-#Get the testing data
 def getTestingData():
     #call input function
     filepath = input('Please enter the file path for your testing data: ')
@@ -195,11 +193,8 @@ def getTestingData():
             #load the data into a list of lists
             data = [row for row in csv_reader]
             colNum = len(data[0])
-
+            
             trueColNum = colNum
-
-           #This for loop changes the data entries from string to int
-
             intData = []
 
             for line in data:
@@ -226,11 +221,8 @@ def getTestingData():
 
 testingData = getTestingData()
 
-#This turns 2d array into a numpy 2d array i.e matrix
-#Thus can now use numpy operations on our data!
-
-#We first split the data into test variables X and output y
-#the target of our MNIST test data is in the first column of the testingData
+#We first split the data into training variables X and output y
+#the target of our MNIST training data is in the first column of the trainingData
 yTarget = testingData[:,[0]]
 #create Theta_Zero column on int 1s
 thetaZero = (0.01388235294)*numpy.ones((testingData.shape[0],1),int)
@@ -241,22 +233,30 @@ XprimeTest = numpy.delete(testingData,0,1)
 XTest = numpy.append(thetaZero, XprimeTest,1)
 
 #display random ten digits from the data
+num_test_examples = int(input("Please enter an integer for the number of testing examples to check:"))
+while type(num_test_examples) != int:
+    num_test_examples = int(input("Please enter an integer for the number of testing examples to check:"))
+
 image_width = int(math.sqrt(XprimeTest.shape[1]))
 e = int(numpy.shape(XTest)[1])
-test_digits = numpy.ones((10,e))
-print("Displaying 10 randomly selected test examples...")
-for i in range(0,10):
+test_digits = numpy.ones((num_test_examples,e))
+print("Displaying",num_test_examples,"randomly selected test examples...")
+displayed_digits = numpy.zeros((num_test_examples,1))
+for i in range(0,num_test_examples):
     j = random.randint(1, XprimeTest.shape[0])
     img = XprimeTest[j].reshape((image_width,image_width))
     #we will use test digits to test predictor
     #test_digits
     test_digits[i] = XTest[j]
-    print(yTarget[j])
+    displayed_digits[i] = yTarget[j]
     plt.imshow(img, cmap="Greens")
     plt.show()
 plt.close()
+print("The displayed digits were...")
+print(numpy.transpose(displayed_digits))
 print("The predicted values are according to the oneVsAll algorithm are...")
-print(prediction(test_digits,all_theta))
+p=prediction(test_digits,all_theta)
+print(p)
 
 
 
